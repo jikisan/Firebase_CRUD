@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "994921663264",
+    "project_id": "eldroid-85e24",
+    "storage_bucket": "eldroid-85e24.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:994921663264:android:2a19ea2cacf7a361dba545",
+        "android_client_info": {
+          "package_name": "com.example.sqlite_crud"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "994921663264-ojaepadri5idheh03bttvmjhqsdbrfdv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBN-5y9bnhMF1MpqMIH87E-60tJMKX0fXU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "994921663264-ojaepadri5idheh03bttvmjhqsdbrfdv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
