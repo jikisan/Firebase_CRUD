@@ -17,16 +17,23 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -42,6 +49,8 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class dashboard extends AppCompatActivity {
 
@@ -50,12 +59,15 @@ public class dashboard extends AppCompatActivity {
     private DatabaseReference userDatabase;
     private StorageTask addTask;
     private Task addTaskNoImage;
-    private String userID, tempImageName;
+    private String userID, tempImageName, tempEmail;
 
     private ImageView iv_editButton, iv_saveButton, iv_profile_photo, btn_cancel;
-    private EditText tv_fname, tv_lname, tv_contactNum, tv_email;
-    private TextView tv_uploadPhoto, tv_signout;
+    private EditText tv_fname, tv_lname, tv_contactNum, tv_email, tv_newPassword;
+    private TextView tv_uploadPhoto, tv_signout, tv_password, textView27;
     private ProgressBar progressBar;
+    private Button btn_delete;
+    private FirebaseAuth fAuth;
+
 
     private Uri imageUri;
 
@@ -68,7 +80,7 @@ public class dashboard extends AppCompatActivity {
         userID = user.getUid();
         userDatabase = FirebaseDatabase.getInstance().getReference("Users");
         userStorage = FirebaseStorage.getInstance().getReference("Users").child(userID);
-
+        fAuth = FirebaseAuth.getInstance();
 
         setRef();
         clickListenrs();
@@ -87,7 +99,10 @@ public class dashboard extends AppCompatActivity {
                 iv_editButton.setVisibility(View.INVISIBLE);
                 iv_saveButton.setVisibility(View.VISIBLE);
                 tv_uploadPhoto.setVisibility(View.VISIBLE);
+                tv_newPassword.setVisibility(View.VISIBLE);
+                textView27.setVisibility(View.VISIBLE);
                 btn_cancel.setVisibility(View.VISIBLE);
+                btn_delete.setVisibility(View.VISIBLE);
             }
         });
 
@@ -109,14 +124,12 @@ public class dashboard extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
 
-                                    if(!hasImage(iv_profile_photo))
+                                    if(imageUri != null)
                                     {
-                                        Toast.makeText(dashboard.this, "With Image", Toast.LENGTH_SHORT);
                                         updateProject();
                                     }
                                     else
                                     {
-                                        Toast.makeText(dashboard.this, "No Image", Toast.LENGTH_SHORT).show();
                                         updateProjectNoImage();
                                     }
 
@@ -140,6 +153,7 @@ public class dashboard extends AppCompatActivity {
                     iv_saveButton.setVisibility(View.INVISIBLE);
                     tv_uploadPhoto.setVisibility(View.GONE);
                     btn_cancel.setVisibility(View.INVISIBLE);
+                    btn_delete.setVisibility(View.INVISIBLE);
 
                 }
             }
@@ -148,13 +162,68 @@ public class dashboard extends AppCompatActivity {
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                tv_fname.setEnabled(false);
-                tv_lname.setEnabled(false);
-                tv_contactNum.setEnabled(false);
-                iv_editButton.setVisibility(View.VISIBLE);
-                iv_saveButton.setVisibility(View.INVISIBLE);
-                tv_uploadPhoto.setVisibility(View.GONE);
-                btn_cancel.setVisibility(View.INVISIBLE);
+//                tv_fname.setEnabled(false);
+//                tv_lname.setEnabled(false);
+//                tv_contactNum.setEnabled(false);
+//                iv_editButton.setVisibility(View.VISIBLE);
+//                iv_saveButton.setVisibility(View.INVISIBLE);
+//                tv_uploadPhoto.setVisibility(View.GONE);
+//                btn_cancel.setVisibility(View.INVISIBLE);
+//                btn_delete.setVisibility(View.INVISIBLE);
+
+                Intent intent = new Intent(dashboard.this, dashboard.class);
+                startActivity(intent);
+            }
+        });
+
+        btn_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                TextInputEditText password = new TextInputEditText(dashboard.this);
+
+                password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                password.setPadding(24, 8, 8, 8);
+
+                new AlertDialog.Builder(dashboard.this)
+                        .setTitle("Permanently Delete Profile")
+                        .setMessage("Please enter password to permanently delete account")
+                        .setCancelable(true)
+                        .setView(password)
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                String passwordString = password.getText().toString();
+
+                                if (TextUtils.isEmpty(passwordString)) {
+                                    Toast.makeText(dashboard.this, "Password is Required", Toast.LENGTH_SHORT).show();
+
+                                }
+
+                                else if (password.length() < 8) {
+                                    Toast.makeText(dashboard.this, "Password is Required", Toast.LENGTH_SHORT).show();
+
+                                }
+                                else if (!isValidPassword(passwordString))
+                                {
+                                    Toast.makeText(dashboard.this, "Passwords should contain atleast one: uppercase letters: A-Z." +
+                                            " One lowercase letters: a-z. One number: 0-9. ", Toast.LENGTH_LONG).show();
+                                }
+                                else
+                                {
+                                    deleteProfile(passwordString);
+                                }
+
+                            }
+                        })
+                        .setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int i) {
+                            }
+                        })
+                        .show();
+
             }
         });
 
@@ -189,6 +258,57 @@ public class dashboard extends AppCompatActivity {
         });
     }
 
+    private void deleteProfile(String password) {
+
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Deleting account...");
+        progressDialog.show();
+
+        AuthCredential credential = EmailAuthProvider
+                .getCredential(tempEmail, password);
+
+        user.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                user.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+
+                            userDatabase.child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if(imageUri != null){
+                                        StorageReference imageRef = userStorage.child(tempImageName);
+                                        imageRef.delete();
+                                    }
+
+                                    for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                                        dataSnapshot.getRef().removeValue();
+                                    }
+
+                                    FirebaseAuth.getInstance().signOut();
+                                    progressDialog.dismiss();
+                                    Intent intent = new Intent(dashboard.this, login_page.class);
+                                    startActivity(intent);
+                                    Toast.makeText(dashboard.this, "Account deleted", Toast.LENGTH_SHORT).show();
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+            }
+        });
+
+
+    }
+
     private void setRef() {
 
         iv_editButton = findViewById(R.id.btn_update);
@@ -201,8 +321,13 @@ public class dashboard extends AppCompatActivity {
         tv_email = findViewById(R.id.tv_email);
         tv_uploadPhoto = findViewById(R.id.tv_uploadPhoto);
         tv_signout = findViewById(R.id.tv_signout);
+        tv_password = findViewById(R.id.tv_password);
+        tv_newPassword = findViewById(R.id.tv_newPassword);
+        textView27 = findViewById(R.id.textView27);
 
         btn_cancel = findViewById(R.id.btn_cancel);
+        btn_delete = findViewById(R.id.btn_delete);
+
 
         progressBar = findViewById(R.id.progressBar);
 
@@ -222,14 +347,25 @@ public class dashboard extends AppCompatActivity {
                     String sp_num = userProfile.contactNum;
                     String sp_email = userProfile.email;
                     String sp_imageUrl = userProfile.imageUrl;
+                    String sp_password = userProfile.password;
                     tempImageName = userProfile.imageName;
+                    tempEmail = sp_email;
 
                     tv_fname.setText(sp_fName);
                     tv_lname.setText(sp_lName);
                     tv_contactNum.setText( sp_num);
-                    tv_email.setText(sp_email);
+                    tv_email.setText(tempEmail);
+                    tv_password.setText(sp_password);
 
-                    Picasso.get().load(sp_imageUrl).into(iv_profile_photo);
+                    if (sp_imageUrl.isEmpty()) {
+                        iv_profile_photo.setImageResource(R.color.white);
+                    } else{
+                        Picasso.get().load(sp_imageUrl)
+                                .placeholder(R.color.white)
+                                .into(iv_profile_photo);
+                    }
+
+
                     progressBar.setVisibility(View.GONE);
 
 
@@ -254,60 +390,68 @@ public class dashboard extends AppCompatActivity {
         progressDialog.setTitle("Updating Profile...");
         progressDialog.show();
 
-        StorageReference fileReference = userStorage.child(imageUri.getLastPathSegment());
+        String password = tv_password.getText().toString();
 
-        String sp_fname = tv_fname.getText().toString();
-        String sp_lname = tv_lname.getText().toString();
-        String sp_contactNum = tv_contactNum.getText().toString();
-        String sp_email = tv_email.getText().toString();
-        String imageName = imageUri.getLastPathSegment();
+        if (TextUtils.isEmpty(password)) {
+            Toast.makeText(dashboard.this, "Password is Required", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (password.length() < 8) {
+            Toast.makeText(dashboard.this, "Password must be 8 or more characters", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (!isValidPassword(password)) {
+            Toast.makeText(dashboard.this, "Please choose a stronger password. Try a mix of letters, numbers, and symbols.", Toast.LENGTH_LONG).show();
+        } else {
 
-        int ratings = 0;
+            StorageReference fileReference = userStorage.child(imageUri.getLastPathSegment());
 
+            String sp_fname = tv_fname.getText().toString();
+            String sp_lname = tv_lname.getText().toString();
+            String sp_contactNum = tv_contactNum.getText().toString();
+            String sp_email = tv_email.getText().toString();
+            String imageName = imageUri.getLastPathSegment();
 
-        addTask = fileReference.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>()
-        {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot)
-            {
-                fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        final String imageURL = uri.toString();
-
-
-                        HashMap<String, Object> hashMap = new HashMap<String, Object>();
-                        hashMap.put("firstName", sp_fname);
-                        hashMap.put("lastName", sp_lname);
-                        hashMap.put("contactNum", sp_contactNum);
-                        hashMap.put("username", sp_email);
-                        hashMap.put("imageName", imageName);
-                        hashMap.put("imageUrl", imageURL);
+            int ratings = 0;
 
 
-                        userDatabase.child(userID).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener() {
-                            @Override
-                            public void onSuccess(Object o) {
-                                StorageReference imageRef = userStorage.child(tempImageName);
-                                imageRef.delete();
-                                progressDialog.dismiss();
-                                Intent intent = new Intent(dashboard.this, dashboard.class);
-                                startActivity(intent);
-                                Toast.makeText(dashboard.this, "Profile is updated", Toast.LENGTH_SHORT).show();
+            addTask = fileReference.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            final String imageURL = uri.toString();
 
-                            }
-                        });
-                    }
-                });
-            }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(dashboard.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
 
+                            HashMap<String, Object> hashMap = new HashMap<String, Object>();
+                            hashMap.put("firstName", sp_fname);
+                            hashMap.put("lastName", sp_lname);
+                            hashMap.put("contactNum", sp_contactNum);
+                            hashMap.put("username", sp_email);
+                            hashMap.put("imageName", imageName);
+                            hashMap.put("imageUrl", imageURL);
+                            hashMap.put("password", password);
+
+
+                            userDatabase.child(userID).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener() {
+                                @Override
+                                public void onSuccess(Object o) {
+
+                                    changePassword(sp_email, progressDialog, password);
+
+
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(dashboard.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+    }
     }
 
     private void updateProjectNoImage() {
@@ -315,44 +459,131 @@ public class dashboard extends AppCompatActivity {
         progressDialog.setTitle("Updating Profile...");
         progressDialog.show();
 
-        String sp_fname = tv_fname.getText().toString();
-        String sp_lname = tv_lname.getText().toString();
-        String sp_contactNum = tv_contactNum.getText().toString();
-        String sp_email = tv_email.getText().toString();
+        String password = tv_password.getText().toString();
+
+        if (TextUtils.isEmpty(password)) {
+            Toast.makeText(dashboard.this, "Password is Required", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (password.length() < 8) {
+            Toast.makeText(dashboard.this, "Password must be 8 or more characters", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (!isValidPassword(password)) {
+            Toast.makeText(dashboard.this, "Please choose a stronger password. Try a mix of letters, numbers, and symbols.", Toast.LENGTH_LONG).show();
+        } else {
+
+            String sp_fname = tv_fname.getText().toString();
+            String sp_lname = tv_lname.getText().toString();
+            String sp_contactNum = tv_contactNum.getText().toString();
+            String sp_email = tv_email.getText().toString();
+
+            HashMap<String, Object> hashMap = new HashMap<String, Object>();
+            hashMap.put("firstName", sp_fname);
+            hashMap.put("lastName", sp_lname);
+            hashMap.put("contactNum", sp_contactNum);
+            hashMap.put("username", sp_email);
+            hashMap.put("password", password);
+
+            addTaskNoImage = userDatabase.child(userID).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener() {
+                @Override
+                public void onSuccess(Object o) {
+
+                    changePassword(sp_email, progressDialog, password);
+
+                }
+            })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(dashboard.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+        }
+    }
+
+    private void changePassword(String sp_email, ProgressDialog progressDialog, String password) {
+
+        String newPassword = tv_newPassword.getText().toString();
+
+        if(newPassword.equals(""))
+        {
+            newPassword = password;
+        }
+
+        AuthCredential credential = EmailAuthProvider
+                .getCredential(sp_email, password);
+
+        String finalNewPassword = newPassword;
+        user.reauthenticate(credential)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful())
+                            {
+                                user.updatePassword(finalNewPassword).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                        {
+                                            HashMap<String, Object> hashMap = new HashMap<String, Object>();
+                                            hashMap.put("password", finalNewPassword);
+
+                                            addTaskNoImage = userDatabase.child(userID).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener() {
+                                                @Override
+                                                public void onSuccess(Object o) {
+
+                                                    progressDialog.dismiss();
+
+                                                    String pw = tv_newPassword.getText().toString();
+                                                    if(pw.matches(""))
+                                                    {
+                                                        Intent intent = new Intent(dashboard.this, dashboard.class);
+                                                        startActivity(intent);
+                                                        Toast.makeText(dashboard.this, "Profile is updated", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                    else
+                                                    {
+                                                        FirebaseAuth.getInstance().signOut();
+                                                        Intent intent = new Intent(dashboard.this, login_page.class);
+                                                        startActivity(intent);
+                                                        Toast.makeText(dashboard.this, "Profile is updated", Toast.LENGTH_SHORT).show();
+                                                    }
 
 
-        HashMap<String, Object> hashMap = new HashMap<String, Object>();
-        hashMap.put("firstName", sp_fname);
-        hashMap.put("lastName", sp_lname);
-        hashMap.put("contactNum", sp_contactNum);
-        hashMap.put("username", sp_email);
+                                                }
+                                            })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Toast.makeText(dashboard.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                                    }
+                                                });
 
+                                        }
 
-        addTaskNoImage = userDatabase.child(userID).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener() {
-            @Override
-            public void onSuccess(Object o) {
-                progressDialog.dismiss();
-                Intent intent = new Intent(dashboard.this, dashboard.class);
-                startActivity(intent);
-                Toast.makeText(dashboard.this, "Profile is updated", Toast.LENGTH_SHORT).show();
-
-            }
-        })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(dashboard.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                Toast.makeText(dashboard.this, "Incorrect Password", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
 
     }
 
-    private boolean hasImage(ImageView iv){
 
-        Drawable drawable = iv.getDrawable();
-        BitmapDrawable bitmapDrawable = drawable instanceof BitmapDrawable ? (BitmapDrawable)drawable : null;
+    private boolean isValidPassword(String password) {
+        String regex = "^(?=.*[0-9])"
+                + "(?=.*[a-z])(?=.*[A-Z])"
+                + "(?=.*[@#$%^&+=?!#$%&()*+,./])"
+                + "(?=\\S+$).{8,15}$";
 
-        return bitmapDrawable == null || bitmapDrawable.getBitmap() == null;
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(password);
+
+        return m.matches();
     }
 
     @Override

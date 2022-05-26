@@ -59,7 +59,6 @@
                     android:id="@+id/et_firstName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-
                     android:hint="First Name"
                     android:maxLength="30"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -90,7 +89,6 @@
                     android:layout_height="wrap_content"
                     android:hint="Last Name"
                     android:maxLength="30"
-
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
 

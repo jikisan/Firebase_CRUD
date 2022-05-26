@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
@@ -20,6 +21,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,21 +44,21 @@ public class login_page extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_page);
 
-        setRef();
-
-
-        if (fAuth.getCurrentUser() != null) {
-            startActivity(new Intent(getApplicationContext(), dashboard.class));
-            finish();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(!(user == null)){
+            Intent intent = new Intent(login_page.this, dashboard.class);
+            startActivity(intent);
         }
 
+
+
+        setRef();
         ClickListener();
 
 
     }
 
     private void ClickListener() {
-
 
 
         tv_signUp.setOnClickListener(new View.OnClickListener() {
@@ -93,8 +95,7 @@ public class login_page extends AppCompatActivity {
                 }
                 else if (!isValidPassword(password))
                 {
-                    Toast.makeText(login_page.this, "Passwords should contain atleast one: uppercase letters: A-Z." +
-                            " One lowercase letters: a-z. One number: 0-9. ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(login_page.this, "Please choose a stronger password. Try a mix of letters, numbers, and symbols.", Toast.LENGTH_LONG).show();
                 }
                 else
                 {
@@ -127,7 +128,9 @@ public class login_page extends AppCompatActivity {
         tv_forgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText resetMail = new EditText(view.getContext());
+                TextInputEditText resetMail = new TextInputEditText(view.getContext());
+                resetMail.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                resetMail.setPadding(24, 8, 8, 8);
 
 
                 AlertDialog.Builder pwResetDialog = new AlertDialog.Builder(view.getContext());
@@ -143,12 +146,12 @@ public class login_page extends AppCompatActivity {
 
                         if (TextUtils.isEmpty(email))
                         {
-                            et_username.setError("Email is Required");
-                            return;
+                            Toast.makeText(login_page.this, "Email is Required", Toast.LENGTH_SHORT).show();
+
                         }
                         else if ( !Patterns.EMAIL_ADDRESS.matcher(email).matches())
                         {
-                            et_username.setError("Incorrect Email Format");
+                            Toast.makeText(login_page.this, "Email is Required", Toast.LENGTH_SHORT).show();
                         }
                         else
                         {
@@ -189,8 +192,9 @@ public class login_page extends AppCompatActivity {
     private boolean isValidPassword(String password) {
         String regex = "^(?=.*[0-9])"
                 + "(?=.*[a-z])(?=.*[A-Z])"
-                + "(?=.*[@#$%^&+=?!])"
+                + "(?=.*[@#$%^&+=?!#$%&()*+,./])"
                 + "(?=\\S+$).{8,15}$";
+
 
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(password);
@@ -208,6 +212,7 @@ public class login_page extends AppCompatActivity {
     }
 
     private void setRef() {
+
 
         et_username = findViewById(R.id.et_username);
         et_password = findViewById(R.id.et_password);

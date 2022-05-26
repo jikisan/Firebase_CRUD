@@ -9,10 +9,11 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:indeterminate="true"
         android:visibility="visible"
+        android:indeterminateTint="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -114,7 +115,7 @@
                 android:layout_height="120dp"
                 android:layout_marginTop="52dp"
                 android:src="@color/white"
-                app:civ_border_width="2dp"
+                app:civ_border_width="1dp"
                 app:civ_border_color="@color/black"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -154,13 +155,14 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginRight="16dp"
                 android:gravity="end"
-                android:text="Not Provided"
+                android:hint="Loading..."
                 android:textAlignment="viewEnd"
                 android:textSize="16sp"
                 android:textColor="@color/black"
                 android:background="@null"
                 android:enabled="false"
                 android:maxLength="30"
+                android:digits=" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 app:layout_constraintBottom_toBottomOf="@+id/textView22"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/textView22" />
@@ -195,12 +197,13 @@
                 android:layout_marginRight="16dp"
                 android:gravity="end"
                 android:background="@null"
-                android:text="Not Provided"
+                android:hint="Loading..."
                 android:textAlignment="viewEnd"
                 android:textSize="16sp"
                 android:textColor="@color/black"
                 android:enabled="false"
                 android:maxLength="30"
+                android:digits=" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 app:layout_constraintBottom_toBottomOf="@+id/textView23"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/textView23"
@@ -235,7 +238,7 @@
                 android:layout_marginRight="16dp"
                 android:gravity="end"
                 android:background="@null"
-                android:text="Not Provided"
+                android:hint="Loading..."
                 android:textAlignment="viewEnd"
                 android:textSize="16sp"
                 android:textColor="@color/black"
@@ -274,7 +277,7 @@
                 android:layout_marginRight="16dp"
                 android:gravity="end"
                 android:background="@null"
-                android:text="Not Provided"
+                android:hint="Loading..."
                 android:textAlignment="viewEnd"
                 android:textSize="16sp"
                 android:textColor="@color/black"
@@ -292,6 +295,87 @@
                 android:background="@android:color/darker_gray"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView25" />
+
+            <TextView
+                android:id="@+id/textView26"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Password"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view5" />
+
+            <EditText
+                android:id="@+id/tv_password"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                android:gravity="end"
+                android:background="@null"
+                android:hint="Loading..."
+                android:textAlignment="viewEnd"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:enabled="false"
+                android:maxLength="30"
+                app:layout_constraintBottom_toBottomOf="@+id/textView26"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/textView26" />
+
+            <View
+                android:id="@+id/view6"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="@android:color/darker_gray"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView26" />
+
+            <TextView
+                android:id="@+id/textView27"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
+                android:text="New Password"
+                android:textSize="16sp"
+                android:visibility="invisible"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view6" />
+
+            <EditText
+                android:id="@+id/tv_newPassword"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                android:gravity="end"
+                android:textAlignment="viewEnd"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:enabled="true"
+                android:maxLength="30"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@+id/textView27"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/textView27" />
+
+            <Button
+                android:id="@+id/btn_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="@android:color/holo_red_dark"
+                android:text="Delete account"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView27" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

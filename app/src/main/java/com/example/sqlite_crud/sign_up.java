@@ -85,9 +85,6 @@ public class sign_up extends AppCompatActivity {
         String ratings = "0";
 
 
-
-
-
         if (TextUtils.isEmpty(firstName))
         {
             et_firstName.setError("This field is required");
@@ -146,8 +143,14 @@ public class sign_up extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-                                String id = user.getUid();
-                                Users users = new Users(id, firstName, lastName, contactNum, username, password, imageName, imageUrl, ratings);
+
+                                //String uid = fAuth.getCurrentUser().getUid().toString();
+
+                                user = fAuth.getCurrentUser();
+                                String uid  = user.getUid();
+
+
+                                Users users = new Users(uid, firstName, lastName, contactNum, username, password, imageName, imageUrl, ratings);
 
                                 userDatabase.child(user.getUid())
                                         .setValue(users).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -155,8 +158,9 @@ public class sign_up extends AppCompatActivity {
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()) {
                                             progressDialog.dismiss();
-                                            fAuth.signOut();
-                                            startActivity(new Intent(getApplicationContext(), login_page.class));
+                                          fAuth.getInstance().signOut();
+                                           Intent intent = new Intent(sign_up.this, login_page.class);
+                                            startActivity(intent);
                                             Toast.makeText(sign_up.this, "User Created", Toast.LENGTH_LONG).show();
 
                                         } else {
@@ -183,8 +187,9 @@ public class sign_up extends AppCompatActivity {
 
         String regex = "^(?=.*[0-9])"
                 + "(?=.*[a-z])(?=.*[A-Z])"
-                + "(?=.*[@#$%^&+=?!])"
+                + "(?=.*[@#$%^&+=?!#$%&()*+,./])"
                 + "(?=\\S+$).{8,15}$";
+
 
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(password);
