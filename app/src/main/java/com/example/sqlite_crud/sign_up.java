@@ -49,6 +49,7 @@ public class sign_up extends AppCompatActivity {
     }
 
     private void ClickListener() {
+
         tv_signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,9 +66,6 @@ public class sign_up extends AppCompatActivity {
 
             }
         });
-
-
-
 
     }
 
@@ -120,8 +118,7 @@ public class sign_up extends AppCompatActivity {
         }
         else if (!isValidPassword(password))
         {
-            Toast.makeText(this, "Passwords should contain atleast one: " +
-                    "uppercase letters: A-Z. One lowercase letters: a-z. One number: 0-9. ", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Please choose a stronger password. Try a mix of letters, numbers, and symbols.", Toast.LENGTH_LONG).show();
         }
         else if (TextUtils.isEmpty(confirmPass))
         {

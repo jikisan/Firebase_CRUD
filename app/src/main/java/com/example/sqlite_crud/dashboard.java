@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -410,47 +411,69 @@ public class dashboard extends AppCompatActivity {
             String sp_email = tv_email.getText().toString();
             String imageName = imageUri.getLastPathSegment();
 
-            int ratings = 0;
+            if (TextUtils.isEmpty(sp_fname))
+            {
+                Toast.makeText(this, "First name is required", Toast.LENGTH_SHORT).show();
+            }
+            else if (TextUtils.isEmpty(sp_lname))
+            {
+                Toast.makeText(this, "Last name is required", Toast.LENGTH_SHORT).show();
+            }
+            else if (TextUtils.isEmpty(sp_contactNum))
+            {
+                Toast.makeText(this, "Contact number is required", Toast.LENGTH_SHORT).show();
+            }
+            else if (sp_contactNum.length() < 11)
+            {
+                Toast.makeText(this, "Contact number must be 11 digit", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                int ratings = 0;
 
 
-            addTask = fileReference.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            final String imageURL = uri.toString();
+                addTask = fileReference.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>()
+                {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                final String imageURL = uri.toString();
 
 
-                            HashMap<String, Object> hashMap = new HashMap<String, Object>();
-                            hashMap.put("firstName", sp_fname);
-                            hashMap.put("lastName", sp_lname);
-                            hashMap.put("contactNum", sp_contactNum);
-                            hashMap.put("username", sp_email);
-                            hashMap.put("imageName", imageName);
-                            hashMap.put("imageUrl", imageURL);
-                            hashMap.put("password", password);
+                                HashMap<String, Object> hashMap = new HashMap<String, Object>();
+                                hashMap.put("firstName", sp_fname);
+                                hashMap.put("lastName", sp_lname);
+                                hashMap.put("contactNum", sp_contactNum);
+                                hashMap.put("username", sp_email);
+                                hashMap.put("imageName", imageName);
+                                hashMap.put("imageUrl", imageURL);
+                                hashMap.put("password", password);
 
 
-                            userDatabase.child(userID).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener() {
-                                @Override
-                                public void onSuccess(Object o) {
+                                userDatabase.child(userID).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener() {
+                                    @Override
+                                    public void onSuccess(Object o) {
 
-                                    changePassword(sp_email, progressDialog, password);
+                                        changePassword(sp_email, progressDialog, password);
 
 
-                                }
-                            });
-                        }
-                    });
-                }
-            })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(dashboard.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(dashboard.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+            }
+
+
     }
     }
 

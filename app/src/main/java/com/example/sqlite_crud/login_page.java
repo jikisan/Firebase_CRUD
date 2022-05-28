@@ -46,7 +46,7 @@ public class login_page extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if(!(user == null)){
-            Intent intent = new Intent(login_page.this, dashboard.class);
+            Intent intent = new Intent(login_page.this, dashboard_two.class);
             startActivity(intent);
         }
 
@@ -59,7 +59,6 @@ public class login_page extends AppCompatActivity {
     }
 
     private void ClickListener() {
-
 
         tv_signUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,7 +106,7 @@ public class login_page extends AppCompatActivity {
 
                                 if(user.isEmailVerified()){
                                     Toast.makeText(login_page.this, "Login Successfully", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(getApplicationContext(), dashboard.class));
+                                    startActivity(new Intent(getApplicationContext(), dashboard_two.class));
                                 }else{
                                     user.sendEmailVerification();
                                     Toast.makeText(login_page.this, "Please check your email to verify your account.", Toast.LENGTH_SHORT).show();
